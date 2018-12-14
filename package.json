@@ -1,0 +1,16 @@
+{
+  "name": "qyaml",
+  "version": "0.1.0",
+  "description": "js object to/from simple yaml conversion",
+  "main": "qyaml",
+  "keywords": [ "yaml", "json", "simple", "stringify", "convert" ],
+  "license": "Apache-2.0",
+  "repository": { "type": "git", "url": "https://github.com/andrasq/node-qyaml" },
+  "readme": "see README.md in the repo",
+
+  "scripts": {
+    "test": "qnit test-*",
+    "coverage": "nyc -r text -r lcov npm test",
+    "clean": "rm -rf .nyc_output coverage"
+  }
+}
