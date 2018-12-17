@@ -258,6 +258,14 @@ module.exports = {
                 t.deepEqual(qyaml.encode({ 'a"b': 1 }), '"a\\"b": 1\n');
                 t.done();
             },
+
+            'should reject circular structures': function(t) {
+                var coder = new qyaml.Qyaml();
+                var obj = {};
+                obj.self = obj;
+                t.throws(function(){ coder.encode(obj) }, /depth limit/);
+                t.done();
+            },
         },
 
         'errors': {

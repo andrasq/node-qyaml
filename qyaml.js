@@ -29,6 +29,7 @@ function Qyaml( options ) {
     this.INDENT = options.indent || 2;          // indentation increment to use in output
     this.lineNumber = null;
     this._indentstr = new Array(this.INDENT + 1).join(' ');
+    this._depth = 0;
 
     this.defaults = defaults;
 }
@@ -57,6 +58,7 @@ Qyaml.prototype.decode = function decode( str ) {
 }
 
 Qyaml.prototype.encode = function encode( obj ) {
+    this._depth = 0;
     var lines = new Array();
     this.encodeLines(lines, '', obj);
     return lines.join('\n') + '\n';
@@ -64,6 +66,9 @@ Qyaml.prototype.encode = function encode( obj ) {
 
 
 Qyaml.prototype.encodeLines = function encodeLines( lines, indentstr, item ) {
+    this._depth += 1;
+    if (this._depth >= 1000) throw this.makeError(0, 'depth limit of %d exceeded', this._depth);
+
     if (Array.isArray(item)) {
         for (var i = 0; i < item.length; i++) {
             if (Array.isArray(item[i]) || isHash(item[i])) {
@@ -85,6 +90,8 @@ Qyaml.prototype.encodeLines = function encodeLines( lines, indentstr, item ) {
         }
     }
     else throw this.makeError(0, 'cannot encode simple value', item);
+
+    this._depth -= 1;
     return lines;
 }
 
@@ -166,10 +173,10 @@ Qyaml.prototype.decodeLines = function decodeLines( lines, indent, lineOffset ) 
         // it is an error if the indent changes within a section
         if (lineIndent > baseIndent && (array.length || propertyCount)) throw this.makeError(this.lineNumber, 'unexpected change in indentation');
 
-        if (line[0] === '-' && /^-(\s|$)/.test(line)) {
+        if (line[0] === '-' && (line.length === 1 || line[1] === ' ')) {
             if (propertyCount) throw this.makeError(this.lineNumber, 'unexpected array element in hash');
             valueString = line.slice(1).trim();
-            // nested arrays/hashes must be indented
+            // arrays/hashes contained in an array must be indented
             value = this.extractValue(valueString, lines, lineIndent + 1, this.lineNumber);
             array.push(value);
             asArray = true;

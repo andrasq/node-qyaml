@@ -1,6 +1,6 @@
 {
   "name": "qyaml",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "js object to/from simple yaml conversion",
   "main": "qyaml",
   "keywords": [ "yaml", "json", "simple", "stringify", "convert" ],

@@ -2,7 +2,7 @@ qyaml
 =====
 
 Functions to convert javascript objects to/from simple YAML notation.  Supports the
-basics, hashes of `name: value` pairs and lists of `- ` entities.  Hashes and arrays
+basics:  hashes of `name: value` pairs and lists of `- ` entities.  Hashes and arrays
 can contain other hashes and/or arrays.
 
     const qyaml = require('qyaml');
@@ -28,7 +28,7 @@ Decode the yaml string into an object.  Throws on yaml error.
 ### qyaml.encode( objectOrArray )
 
 Encode the object (or array) into a multi-line yaml string.  Lines are terminated with
-newlines `'\n'`.
+newlines `'\n'`.  Throws an error on circular structures.
 
 ### coder = qyaml.defaults( options )
 
@@ -86,6 +86,7 @@ built-in types
 Change Log
 ----------
 
+- 0.1.1 - throw if encoding circular structures
 - 0.1.0 - initial version
 
 
