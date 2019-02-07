@@ -1,7 +1,7 @@
 {
   "name": "qyaml",
   "version": "0.1.1",
-  "description": "js object to/from simple yaml conversion",
+  "description": "convert js object to/from simple yaml",
   "main": "qyaml",
   "keywords": [ "yaml", "json", "simple", "stringify", "convert" ],
   "license": "Apache-2.0",
