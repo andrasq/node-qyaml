@@ -1,5 +1,7 @@
 qyaml
 =====
+[![Build Status](https://api.travis-ci.org/andrasq/node-qyaml.svg?branch=master)](https://travis-ci.org/andrasq/node-qyaml?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/andrasq/node-qyaml/badge.svg?branch=master)](https://coveralls.io/github/andrasq/node-qyaml?branch=master)
 
 Functions to convert javascript objects to/from simple YAML notation.  Supports the
 basics:  hashes of `name: value` pairs and lists of `- ` entities.  Hashes and arrays
