@@ -81,12 +81,13 @@ Qyaml.prototype.encodeLines = function encodeLines( lines, indentstr, item ) {
     else if (isHash(item)) {
         for (var k in item) {
             if (item[k] === undefined) continue;
-            else if (Array.isArray(item[k]) || isHash(item[k]) || (item[k] && typeof item[k] === 'object' && !(typeof item[k].toString === 'function'))) {
-                // encode names to allow embedded special chars
-                lines.push(indentstr + this.encodeValue(k) + ':');
+            else if (Array.isArray(item[k]) || isHash(item[k])) {
+                lines.push(indentstr + this.encodeValue(String(k)) + ':');
                 this.encodeLines(lines, indentstr + this._indentstr, item[k]);
             }
-            else lines.push(indentstr + this.encodeValue(k) + ': ' + this.encodeValue(item[k]));
+            else {
+                lines.push(indentstr + this.encodeValue(String(k)) + ': ' + this.encodeValue(item[k]));
+            }
         }
     }
     else throw this.makeError(0, 'cannot encode simple value', item);
@@ -144,8 +145,10 @@ Qyaml.prototype.decodeLines = function decodeLines( lines, indent, lineOffset ) 
     var array = [], object = {}, asArray = false;
 
     var name, value, valueString;
+    var mark, nextIndent = -1;
     while (lines.length > 0) {
-        var lineIndent = this.countIndent(lines[0]);
+        var lineIndent = nextIndent >= 0 ? nextIndent : this.countIndent(lines[0]);
+        nextIndent = -1;
         var line = lines[0].trim();
 
 // TODO: trim trailing comments
@@ -191,18 +194,27 @@ Qyaml.prototype.decodeLines = function decodeLines( lines, indent, lineOffset ) 
                 return array;
             }
 
-            var nameEnd = line.indexOf(':');
+            var nameEnd = line.indexOf(': ');
+            if (nameEnd < 0 && line[line.length - 1] === ':') nameEnd = line.length - 1;
             if (nameEnd < 0) throw this.makeError(this.lineNumber, 'missing property name');
             name = line.slice(0, nameEnd).trim();
-            if (name[0] === '"') name = this.extractValue(name);
             valueString = line.slice(nameEnd + 1).trim();
-            value =
+            if (name[0] === '"') name = this.extractValue(name);
+            var potentialIndent;
+
+            if (valueString) {
                 // extract explicit values from the string
-                valueString ? this.extractValue(valueString, lines, lineIndent, this.lineNumber) :
+                value = this.extractValue(valueString, lines, lineIndent, this.lineNumber);
+            }
+            else if (lines[(potentialIndent = this.countIndent(lines[0]) || 0)] === '-') {
                 // if value is a list, permit hang-indented elements
-                lines[0].trim()[0] === '-' ? this.extractValue(valueString, lines, lineIndent, this.lineNumber) :
+                value = this.extractValue(valueString, lines, lineIndent, this.lineNumber);
+                nextIndent = potentialIndent;
+            }
+            else {
                 // else require that contents be indented more than the name
-                this.extractValue(valueString, lines, lineIndent + 1, this.lineNumber);
+                value = this.extractValue(valueString, lines, lineIndent + 1, this.lineNumber);
+            }
             object[name] = value;
             propertyCount += 1;
         };
@@ -279,6 +291,7 @@ Qyaml.prototype.countIndent = function countIndent( str ) {
     for (var n = 0; n < str.length; n++) {
         if (str.charCodeAt(n) !== 0x20) return n;
     }
+    return n;
 }
 
 // strip the surrounding quotes and convert embedded escapes
