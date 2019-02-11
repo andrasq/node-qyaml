@@ -4,6 +4,8 @@ node_js:
   - 6
   - 8
   - 10
+before_install:
+  - npm install qnit
 after_success:
   - if [ `node -p 'process.version.slice(0, 3)'` != "v8." ]; then exit; fi
   - npm install -g nyc codecov coveralls

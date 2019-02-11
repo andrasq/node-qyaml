@@ -1,6 +1,6 @@
 'use strict';
 
-var qyaml = require('./qyaml');
+var qyaml = require('./');
 
 module.exports = {
     'defaults': {

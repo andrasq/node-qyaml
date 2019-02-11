@@ -82,7 +82,7 @@ Qyaml.prototype.encodeLines = function encodeLines( lines, indentstr, item ) {
         for (var k in item) {
             if (item[k] === undefined) continue;
             else if (Array.isArray(item[k]) || isHash(item[k]) || (item[k] && typeof item[k] === 'object' && !(typeof item[k].toString === 'function'))) {
-                // encode names to allow
+                // encode names to allow embedded special chars
                 lines.push(indentstr + this.encodeValue(k) + ':');
                 this.encodeLines(lines, indentstr + this._indentstr, item[k]);
             }
@@ -125,6 +125,9 @@ Qyaml.prototype.encodeValue = function encodeValue( value ) {
 var mustQuoteMap = new Array(128), mustQuoteChars = "'\"  [] {} > | * & ! % # ` @ ,";
 for (var i=0; i<mustQuoteChars.length; i++) mustQuoteMap[mustQuoteChars.charCodeAt(i)] = true;
 Qyaml.prototype.mustBeQuoted = function mustBeQuoted( str ) {
+    // empty string, leading/trailing whitespace, leading special chars must be quoted
+    return /^$|^[\s]|[\s]$|^[\s\'\"\[\{>|*!%#`@,]|[\x00-\x1f\n\":\x7f-\uffff]/.test(str);
+
     if (str.length === 0 || mustQuoteMap[str.charCodeAt(0)]) return true;
     for (var i = 0; i < str.length; i++) {
         var ch = str.charCodeAt(i);

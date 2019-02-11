@@ -3,12 +3,14 @@
   "version": "0.1.1",
   "description": "convert js object to/from simple yaml",
   "main": "qyaml",
-  "keywords": [ "yaml", "json", "simple", "stringify", "convert" ],
+  "keywords": [ "yaml", "json", "simple", "stringify", "parse", "encode", "decode", "convert" ],
   "license": "Apache-2.0",
   "repository": { "type": "git", "url": "https://github.com/andrasq/node-qyaml" },
   "readme": "see README.md in the repo",
 
   "scripts": {
+    "prepublishOnly": "mv .travis* bench* test-* .git/ar/",
+    "postpublish": "mv .git/ar/* .git/ar/.travis* .",
     "test": "qnit test-*",
     "coverage": "nyc -r text -r lcov npm test",
     "clean": "rm -rf .nyc_output coverage"

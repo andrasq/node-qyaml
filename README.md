@@ -1,11 +1,14 @@
 qyaml
-=====
+=======
 [![Build Status](https://api.travis-ci.org/andrasq/node-qyaml.svg?branch=master)](https://travis-ci.org/andrasq/node-qyaml?branch=master)
 [![Coverage Status](https://coveralls.io/repos/github/andrasq/node-qyaml/badge.svg?branch=master)](https://coveralls.io/github/andrasq/node-qyaml?branch=master)
 
-Functions to convert javascript objects to/from simple YAML notation.  Supports the
-basics:  hashes of `name: value` pairs and lists of `- ` entities.  Hashes and arrays
-can contain other hashes and/or arrays.
+Small and fast YAML coder, perfect for simple config files.
+
+This is a pared-down YAML encoder/decoder, just enough for objects and arrays:  hashes of
+`name:  value` pairs and lists of `- ` values.  Hashes and arrays can contain other hashes
+and/or arrays.  Does not support more advanced YAML features like multiple documents,
+references or parse trees.  In exchange, though, qyaml is fast and very light-weight.
 
     const qyaml = require('qyaml');
     const yaml =
@@ -42,6 +45,12 @@ and `b` set.
 Recognized options:
 
 - `indent` - number of spaces for each nesting level.  Default 2.
+
+
+Limitations
+-----------
+
+- names must not contain colon-space `": "` char pair
 
 
 YAML Syntax
