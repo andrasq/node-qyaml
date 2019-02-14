@@ -130,6 +130,26 @@ module.exports = {
                 t.deepEqual(qyaml.decode('"a\\"b": 1'), { 'a"b': 1 });
                 t.done();
             },
+
+            'should disallow : in name': function(t) {
+                t.deepEqual(qyaml.decode(' a:b : 1'), { 'a:b': 1 });
+                t.done();
+            },
+
+            'should encode string value of special objects': function(t) {
+                var dt = new Date('2019-01-02T03:04:05.678Z');
+                dt.a = 1;
+                dt.b = 'two';
+                var obj = { a: dt };
+                t.equal(qyaml.encode(obj), 'a: 2019-01-02T03:04:05.678Z\n');
+                t.done();
+            },
+
+            'should decode single dash into an object': function(t) {
+                t.deepEqual(qyaml.decode('a:\n  -\n'), { a: [ {} ] });
+                t.deepEqual(qyaml.decode('a:\n  -\n    aa: 1\n'), { a: [ { aa: 1 } ] });
+                t.done();
+            },
         },
 
         'errors': {
@@ -264,6 +284,26 @@ module.exports = {
                 var obj = {};
                 obj.self = obj;
                 t.throws(function(){ coder.encode(obj) }, /depth limit/);
+                t.done();
+            },
+
+            'should trim trailing comments but only if comment': function(t) {
+                // not trailing comments
+                t.deepEqual(qyaml.decode('a: 1# one'), { a: '1# one' });
+                t.deepEqual(qyaml.decode('a: "1 # one"'), { a: '1 # one' });
+                t.deepEqual(qyaml.decode('a: "one two"'), { a: 'one two' });
+                // yes trailing comments
+                t.deepEqual(qyaml.decode('a: # comment only'), { a: {} });      // no value is an empty object
+                t.deepEqual(qyaml.decode('a: 1 # one'), { a: 1 });
+                t.deepEqual(qyaml.decode('a: 1 \t# one'), { a: 1 });
+                t.deepEqual(qyaml.decode('a: 1  # one'), { a: 1 });
+                t.deepEqual(qyaml.decode('a: 1 \t# one'), { a: 1 });
+                t.deepEqual(qyaml.decode('a: 1\t\t# one'), { a: 1 });
+                t.deepEqual(qyaml.decode('a: 1 #'), { a: 1 });
+                t.deepEqual(qyaml.decode('a: 1 # one two'), { a: 1 });
+                t.deepEqual(qyaml.decode('a: 1 "one"  # not 3 "three"'), { a: '1 "one"' });
+                t.deepEqual(qyaml.decode('a: "one two"  # three'), { a: 'one two' });
+                // TODO: will fail on mid-string quoted comment: 'one "two # three"' will remove the 'three'
                 t.done();
             },
         },

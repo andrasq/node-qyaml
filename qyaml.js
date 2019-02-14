@@ -181,7 +181,7 @@ Qyaml.prototype.decodeLines = function decodeLines( lines, indent, lineOffset ) 
 
         if (line[0] === '-' && (line.length === 1 || line[1] === ' ')) {
             if (propertyCount) throw this.makeError(this.lineNumber, 'unexpected array element in hash');
-            valueString = line.slice(1).trim();
+            valueString = this.stripComment(line.slice(1));
             // arrays/hashes contained in an array must be indented
             value = this.extractValue(valueString, lines, lineIndent + 1, this.lineNumber);
             array.push(value);
@@ -194,11 +194,12 @@ Qyaml.prototype.decodeLines = function decodeLines( lines, indent, lineOffset ) 
                 return array;
             }
 
+            // TODO: try to match and strip name, value, trailing comment with a single regex
             var nameEnd = line.indexOf(': ');
             if (nameEnd < 0 && line[line.length - 1] === ':') nameEnd = line.length - 1;
             if (nameEnd < 0) throw this.makeError(this.lineNumber, 'missing property name');
             name = line.slice(0, nameEnd).trim();
-            valueString = line.slice(nameEnd + 1).trim();
+            valueString = this.stripComment(line.slice(nameEnd + 1));
             if (name[0] === '"') name = this.extractValue(name);
             var potentialIndent;
 
@@ -206,7 +207,7 @@ Qyaml.prototype.decodeLines = function decodeLines( lines, indent, lineOffset ) 
                 // extract explicit values from the string
                 value = this.extractValue(valueString, lines, lineIndent, this.lineNumber);
             }
-            else if (lines[(potentialIndent = this.countIndent(lines[0]) || 0)] === '-') {
+            else if (lines[0] && lines[(potentialIndent = this.countIndent(lines[0]) || 0)] === '-') {
                 // if value is a list, permit hang-indented elements
                 value = this.extractValue(valueString, lines, lineIndent, this.lineNumber);
                 nextIndent = potentialIndent;
@@ -293,6 +294,32 @@ Qyaml.prototype.countIndent = function countIndent( str ) {
     }
     return n;
 }
+
+// return the string with trailing comments removed
+// TODO: 5% overhead for this on .travis.yml
+var trailingCommentRegex = new RegExp(
+    "^\\s*(" +
+    "(\".*\")|" +
+    "(\'.*\')|" +
+    "([^\\s#\"]([^\\s#]|[^\\t ]#|[^#]*))|" +    // TODO: chars not including ' #' matches trailing whitespace too
+    "[^\\s#\"][^\\s]|" +
+    "[^\\s#\"]|" +
+    "" +
+    ")([\\t ]+#.*)?$"
+);
+Qyaml.prototype.stripComment = function stripComment( str ) {
+    // fast path the expected case
+    if (str.indexOf('#') < 0) return str.trim()
+
+    var match = trailingCommentRegex.exec(str);
+//console.log("AR: match '%s': '%s'", str, match && match[1], match);
+    // TODO: the chars-not-including-trailing-comments matches trailing whitespace; remove it here
+    if (match) return match[1].trim();
+
+    // the above should have matched all possible strings, but just in case
+    return str.trim();
+}
+
 
 // strip the surrounding quotes and convert embedded escapes
 function tryJsonDecode( str ) {
