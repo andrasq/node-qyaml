@@ -71,10 +71,17 @@ module.exports = {
                 '  - 4',
                 '  - 5',
                 '  -',
+// FIXME: d: should not be inside c: (de-indent should terminate the array)
+//                'd:',
+//                '  d2:',
+//                '  - 6',
+//                '  - 7',
             ].join('\n') + '\n';
 
             var obj = qyaml.decode(yaml);
             t.deepStrictEqual(obj, { a: 1, b: [ 2, 3 ], c: [ 4, 5, {} ] });
+//console.log("AR: got", obj);
+//            t.deepStrictEqual(obj, { a: 1, b: [ 2, 3 ], c: [ 4, 5, {} ], d: { d2: [ 6, 7 ] } });
             t.done();
         },
 

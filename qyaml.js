@@ -129,11 +129,13 @@ Qyaml.prototype.mustBeQuoted = function mustBeQuoted( str ) {
     // empty string, leading/trailing whitespace, leading special chars must be quoted
     return /^$|^[\s]|[\s]$|^[\s\'\"\[\{>|*!%#`@,]|[\x00-\x1f\n\":\x7f-\uffff]/.test(str);
 
+/**
     if (str.length === 0 || mustQuoteMap[str.charCodeAt(0)]) return true;
     for (var i = 0; i < str.length; i++) {
         var ch = str.charCodeAt(i);
         if (ch < 0x20 || ch >= 0x7f || ch === 0x22 || ch === 0x3a) return true;
     }
+**/
 }
 
 Qyaml.prototype.decodeLines = function decodeLines( lines, indent, lineOffset ) {
@@ -207,8 +209,8 @@ Qyaml.prototype.decodeLines = function decodeLines( lines, indent, lineOffset ) 
                 // extract explicit values from the string
                 value = this.extractValue(valueString, lines, lineIndent, this.lineNumber);
             }
-            else if (lines[0] && lines[(potentialIndent = this.countIndent(lines[0]) || 0)] === '-') {
-                // if value is a list, permit hang-indented elements
+            else if (lines[0] && lines[(potentialIndent = this.countIndent(lines[0]) || 0)] === '-' && lineIndent <= potentialIndent) {
+                // if value is a list, permit hang-indented list items
                 value = this.extractValue(valueString, lines, lineIndent, this.lineNumber);
                 nextIndent = potentialIndent;
             }
@@ -251,6 +253,8 @@ Qyaml.prototype.extractValue = function extractValue( valStr, lines, nestedInden
             case '5': case '6': case '7': case '8': case '9':
             case '+': case '-': case '.': case 'I':
                 // if it can be converted to a number, is a number
+                // TODO: 0.10 should be preserved as "0.10" (eg version number) -- maybe test
+                // TODO: However, .5 and 0.5 are the same... how to handle?
                 var num = Number(valStr);
                 // NOTE: 0x10 is converted to 16, but 010 is 10 (not 8), but floats are always base 10
                 if (typeof num === 'number' && !isNaN(num)) return num;
