@@ -50,7 +50,9 @@ Recognized options:
 Limitations
 -----------
 
-- names must not contain colon-space `": "` char pair
+- names must not contain colon-space `": "` char pairs
+- names that begin with or end with whitespace must be quoted (in JSON compatible format)
+- comments are not retained
 
 
 YAML Syntax
